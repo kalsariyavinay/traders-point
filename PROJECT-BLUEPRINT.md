@@ -27,11 +27,11 @@ described in §6 – §12. Verify with §14.
 **To extend the project:** read §13 (decisions you must not accidentally break)
 and §15 (what is deliberately missing and what to build next).
 
-**A note on the folder name.** The project lives in a folder called `skin-care`.
+**A note on the folder name.** The project lives in a folder called `traders-point`.
 That is a historical accident — the product is **Traders Point Academy**, a paid
 stock-market trading video platform. The folder name is intentional (the owner
 knows); do not "fix" it, but be aware it appears in `.htaccess` (`RewriteBase`),
-in `APP_URL`, and in the database name `skin_care`.
+in `APP_URL`, and in the database name `traders_point`.
 
 ---
 
@@ -116,12 +116,12 @@ Currency: **INR (₹)**, amounts charged in paise.
 
 | Thing | Value |
 |---|---|
-| Project path | `C:\xampp-8.2\htdocs\skin-care` |
+| Project path | `C:\xampp-8.2\htdocs\traders-point` |
 | PHP CLI | `C:\xampp-8.2\php\php.exe` |
 | php.ini | `C:\xampp-8.2\php\php.ini` |
 | MySQL CLI | `C:\xampp-8.2\mysql\bin\mysql.exe` (not on PATH) |
 | Apache config | `C:\xampp-8.2\apache\conf\httpd.conf` |
-| Browse URL | `http://localhost/skin-care` → redirects to `/skin-care/public/` |
+| Browse URL | `http://localhost/traders-point` → redirects to `/traders-point/public/` |
 
 **Required PHP extensions** (all present in XAMPP 8.2 by default):
 `bcmath, ctype, curl, dom, fileinfo, filter, gd, hash, intl, mbstring, openssl,
@@ -149,12 +149,12 @@ memory_limit        = 512M
 cd C:/xampp-8.2/htdocs
 
 # 1. Laravel
-composer create-project laravel/laravel skin-care
-cd skin-care
+composer create-project laravel/laravel traders-point
+cd traders-point
 
 # 2. Database
 "C:/xampp-8.2/mysql/bin/mysql.exe" -u root -e \
-  "CREATE DATABASE skin_care CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+  "CREATE DATABASE traders_point CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
 # 3. Packages
 composer require laravel/breeze --dev
@@ -178,7 +178,7 @@ npm run build
 
 | Role | Email | Password |
 |---|---|---|
-| Admin | `admin@skincare.test` | `password` |
+| Admin | `admin@traderspoint.test` | `password` |
 | User | `test@example.com` | `password` |
 
 ---
@@ -189,12 +189,12 @@ npm run build
 
 ```dotenv
 APP_NAME="Traders Point Academy"
-APP_URL=http://localhost/skin-care/public      # ⚠️ MUST include /public — see §13.1
+APP_URL=http://localhost/traders-point/public      # ⚠️ MUST include /public — see §13.1
 
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=skin_care
+DB_DATABASE=traders_point
 DB_USERNAME=root
 DB_PASSWORD=
 
@@ -316,7 +316,7 @@ near-black. See §13.9.
 ```apache
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /skin-care/
+    RewriteBase /traders-point/
     RewriteRule ^public/ - [L]
     RewriteRule ^(.*)$ public/$1 [R=302,L]
 </IfModule>
@@ -1188,7 +1188,7 @@ All conditional blocks carry `x-cloak`.
 
 | Seeder | Runs by default | Creates |
 |---|---|---|
-| `AdminUserSeeder` | yes | `admin@skincare.test` / `password`, role admin, verified |
+| `AdminUserSeeder` | yes | `admin@traderspoint.test` / `password`, role admin, verified |
 | `CategorySeeder` | yes | Basics of Stock Market, Technical Analysis, Options Trading |
 | `DatabaseSeeder` | yes | calls the two above + `test@example.com` / `password` |
 | `DemoContentSeeder` | **no** — `php artisan db:seed --class=DemoContentSeeder` | 7 videos (free/paid, published/draft) on `player.example.com` URLs, 1 successful + 1 failed order, 1 purchase |
@@ -1202,7 +1202,7 @@ Factories: `UserFactory` (+ `admin()` state), `CategoryFactory`,
 ## 12. Test suite
 
 `php artisan test` → **368 tests, 1211 assertions, all passing.**
-Runs on **SQLite in memory** (`phpunit.xml`), so it never touches `skin_care`.
+Runs on **SQLite in memory** (`phpunit.xml`), so it never touches `traders_point`.
 
 > **A warning this suite had to learn.** Three of the worst bugs this project
 > has had were invisible to every test above: the browser cancelled the submit
@@ -1258,13 +1258,13 @@ The app is served from an **htdocs subfolder**. Two consequences:
 
 1. **The root `.htaccess` redirects (`R=302`) instead of rewriting internally.**
    An internal `RewriteRule ^(.*)$ public/$1 [L]` makes Apache keep
-   `REQUEST_URI=/skin-care/` while `SCRIPT_NAME` becomes
-   `/skin-care/public/index.php`. Symfony then computes `pathInfo` as
-   `/skin-care/` and **every route 404s**. The redirect keeps the two aligned.
-   `RewriteBase /skin-care/` is required or the redirect resolves to a filesystem
+   `REQUEST_URI=/traders-point/` while `SCRIPT_NAME` becomes
+   `/traders-point/public/index.php`. Symfony then computes `pathInfo` as
+   `/traders-point/` and **every route 404s**. The redirect keeps the two aligned.
+   `RewriteBase /traders-point/` is required or the redirect resolves to a filesystem
    path (`http://localhost/C:/xampp-8.2/...`).
 
-2. **`APP_URL=http://localhost/skin-care/public`.** The `public` filesystem disk
+2. **`APP_URL=http://localhost/traders-point/public`.** The `public` filesystem disk
    builds its URL as `rtrim(env('APP_URL'),'/') . '/storage'`. Without `/public`
    every thumbnail URL 404s. Password-reset links also come out right because the
    root redirect preserves path and query string.
@@ -1272,7 +1272,7 @@ The app is served from an **htdocs subfolder**. Two consequences:
 ### 13.2 `phpunit.xml` overrides `APP_URL`
 
 Laravel resolves relative test URLs against `config('app.url')`. With the
-sub-path in there, `$this->get('/login')` requests `/skin-care/login` and 22 tests
+sub-path in there, `$this->get('/login')` requests `/traders-point/login` and 22 tests
 404. Hence `<env name="APP_URL" value="http://localhost"/>`.
 
 ### 13.3 Tailwind v3 only
@@ -1625,7 +1625,7 @@ Manual smoke test:
 
 | Check | Expect |
 |---|---|
-| `http://localhost/skin-care` | 302 → `/skin-care/public/`, 200 |
+| `http://localhost/traders-point` | 302 → `/traders-point/public/`, 200 |
 | `/videos/<free-slug>` as guest | player renders |
 | `/videos/<paid-slug>` as guest | lock + "Sign in to buy", **no** player markup |
 | `/videos/<paid-slug>/stream` as guest | **403** |
@@ -1758,7 +1758,7 @@ php artisan optimize:clear
 # Database
 php artisan migrate:fresh --seed
 php artisan db:seed --class=DemoContentSeeder
-"C:/xampp-8.2/mysql/bin/mysql.exe" -u root -D skin_care -e "SHOW TABLES;"
+"C:/xampp-8.2/mysql/bin/mysql.exe" -u root -D traders_point -e "SHOW TABLES;"
 
 # Logs
 php artisan pail                 # live tail
@@ -1766,11 +1766,11 @@ php artisan pail                 # live tail
 
 | URL | Who |
 |---|---|
-| `http://localhost/skin-care` | everyone |
-| `http://localhost/skin-care/public/dashboard` | signed-in learner |
-| `http://localhost/skin-care/public/admin` | admin only |
+| `http://localhost/traders-point` | everyone |
+| `http://localhost/traders-point/public/dashboard` | signed-in learner |
+| `http://localhost/traders-point/public/admin` | admin only |
 
 | Account | Password |
 |---|---|
-| `admin@skincare.test` | `password` |
+| `admin@traderspoint.test` | `password` |
 | `test@example.com` | `password` |

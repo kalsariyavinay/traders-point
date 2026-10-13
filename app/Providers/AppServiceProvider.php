@@ -28,6 +28,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force HTTPS in production
+        if (config('app.env') === 'production') {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         // Keyed per signed-in user, falling back to IP, so one abusive account
         // cannot lock out everyone behind the same address.
         $perUser = fn (Request $request) => $request->user()?->id ?: $request->ip();
