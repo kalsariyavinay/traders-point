@@ -1,0 +1,54 @@
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Handle X-XSRF-Token Header
+    RewriteCond %{HTTP:x-xsrf-token} .
+    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
+
+    # Redirect Trailing Slashes If Not A Folder...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Send Requests To Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# Caching and compression.
+#
+# mod_headers is loaded in this XAMPP; mod_deflate and mod_expires are not, so
+# the compression block below does nothing until they are switched on in
+# apache/conf/httpd.conf (uncomment mod_filter, mod_deflate and mod_expires --
+# mod_filter is required, it owns AddOutputFilterByType in Apache 2.4).
+# ---------------------------------------------------------------------------
+
+<IfModule mod_headers.c>
+    # Vite fingerprints every filename under build/ (app-0BoUenqz.js), so a
+    # changed file is a changed URL and these can be cached permanently.
+    # Matched on the path, not the extension: a FilesMatch here would also
+    # brand any unhashed .js or .css added anywhere under public/ later, which
+    # would be painful to debug. The build folder cannot carry its own
+    # .htaccess either -- Vite empties that directory on every build.
+    Header set Cache-Control "public, max-age=31536000, immutable" "expr=%{REQUEST_URI} =~ m#/build/#"
+
+    # Uploaded thumbnails keep their name when replaced, so they get a short
+    # cache that still has to re-validate.
+    Header set Cache-Control "public, max-age=86400" "expr=%{REQUEST_URI} =~ m#/storage/#"
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml
+    AddOutputFilterByType DEFLATE application/javascript application/json
+    AddOutputFilterByType DEFLATE image/svg+xml application/rss+xml
+</IfModule>

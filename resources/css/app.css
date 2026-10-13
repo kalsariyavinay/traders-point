@@ -1,0 +1,180 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Keeps Alpine-conditional blocks hidden until Alpine initialises. */
+[x-cloak] {
+    display: none !important;
+}
+
+/*
+| Design tokens.
+|
+| Light is the default and `.dark` on <html> is the opt-in, matching Tailwind's
+| darkMode: 'class'. Values are space-separated RGB channels so Tailwind can
+| apply opacity modifiers (bg-ink/60, text-paper/80, ...).
+|
+| The names are roles: `ink` is the page surface, `paper` is the text on it.
+| Accents are darker in light mode so that an accent used as a BACKGROUND
+| (bg-gold text-ink) and as TEXT (text-gold) both stay legible.
+*/
+:root {
+    --c-ink: 237 241 248;        /* #EDF1F8 page surface, greyed so panels lift */
+    --c-ink-raised: 255 255 255; /* #FFFFFF panels */
+    --c-ink-line: 214 222 237;   /* #D6DEED hairlines */
+    --c-paper: 11 18 34;         /* #0B1222 primary text */
+    --c-muted: 90 104 128;       /* #5A6880 secondary text */
+    --c-bull: 5 122 85;          /* #057A55 */
+    --c-bear: 200 30 74;         /* #C81E4A */
+    --c-gold: 154 107 0;         /* #9A6B00 */
+
+    /* In light mode "glass" is a frosted white card lifting off a grey page --
+       the dark-mode trick of lightening the surface would do nothing here. */
+    --glass-top: rgba(255, 255, 255, 0.94);
+    --glass-bottom: rgba(255, 255, 255, 0.78);
+    --glass-border: rgba(11, 18, 34, 0.09);
+    --glass-border-hover: rgba(11, 18, 34, 0.22);
+    --glass-shadow: 0 1px 2px rgba(11, 18, 34, 0.04), 0 8px 24px -12px rgba(11, 18, 34, 0.18);
+    --graticule-line: rgba(11, 18, 34, 0.05);
+    --glass-blur: blur(14px) saturate(120%);
+}
+
+.dark {
+    --c-ink: 7 11 24;            /* #070B18 */
+    --c-ink-raised: 14 21 41;    /* #0E1529 */
+    --c-ink-line: 27 37 64;      /* #1B2540 */
+    --c-paper: 234 240 255;      /* #EAF0FF */
+    --c-muted: 135 149 184;      /* #8795B8 */
+    --c-bull: 15 191 127;        /* #0FBF7F */
+    --c-bear: 240 80 110;        /* #F0506E */
+    --c-gold: 232 179 57;        /* #E8B339 */
+
+    --glass-top: rgba(234, 240, 255, 0.07);
+    --glass-bottom: rgba(234, 240, 255, 0.02);
+    --glass-border: rgba(148, 173, 255, 0.14);
+    --glass-border-hover: rgba(148, 173, 255, 0.30);
+    --glass-shadow: none;
+    --graticule-line: rgba(148, 173, 255, 0.055);
+    --glass-blur: blur(18px) saturate(140%);
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    /* Anchored sections clear the sticky public header. */
+    .site [id] {
+        scroll-margin-top: 5.5rem;
+    }
+
+    /* Gold focus ring, readable against either surface. */
+    .site :focus-visible {
+        outline: 2px solid rgb(var(--c-gold));
+        outline-offset: 3px;
+        border-radius: 3px;
+    }
+}
+
+@layer components {
+    /* Frosted panel: the one surface every public section is built from. */
+    .glass {
+        background: linear-gradient(160deg, var(--glass-top), var(--glass-bottom));
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--glass-shadow);
+        -webkit-backdrop-filter: var(--glass-blur);
+        backdrop-filter: var(--glass-blur);
+    }
+
+    .glass-interactive {
+        transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .glass-interactive:hover {
+        border-color: var(--glass-border-hover);
+        transform: translateY(-2px);
+    }
+
+    /* Faint chart graticule behind the hero. */
+    .graticule {
+        background-image:
+            linear-gradient(var(--graticule-line) 1px, transparent 1px),
+            linear-gradient(90deg, var(--graticule-line) 1px, transparent 1px);
+        background-size: 100% 3.5rem, 4.5rem 100%;
+    }
+}
+
+@layer utilities {
+    /* Prices and figures line up column-to-column, terminal style. */
+    .tabular {
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+/*
+| Hero signature: the candles grow up off the time axis in sequence, then the
+| support level is drawn across them. Plays once, on load.
+*/
+@keyframes candle-rise {
+    from {
+        transform: scaleY(0);
+        opacity: 0;
+    }
+    to {
+        transform: scaleY(1);
+        opacity: 1;
+    }
+}
+
+@keyframes level-draw {
+    from {
+        stroke-dashoffset: 760;
+    }
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+.candle {
+    transform-box: fill-box;
+    transform-origin: bottom;
+    animation: candle-rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.level {
+    stroke-dasharray: 760;
+    animation: level-draw 1.8s ease-out 0.9s both;
+}
+
+@keyframes soft-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.soft-in {
+    animation: soft-in 0.6s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    .candle,
+    .level,
+    .soft-in {
+        animation: none;
+    }
+
+    .level {
+        stroke-dasharray: none;
+    }
+
+    .glass-interactive:hover {
+        transform: none;
+    }
+}

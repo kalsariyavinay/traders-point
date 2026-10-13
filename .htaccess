@@ -1,0 +1,17 @@
+# Laravel lives in public/. Apache serves this project from a subdirectory of
+# htdocs, so an internal rewrite into public/ would leave Laravel with a
+# mismatched base path -- a redirect keeps REQUEST_URI and SCRIPT_NAME aligned.
+# If this folder is ever renamed, update RewriteBase to match.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /skin-care/
+    RewriteRule ^public/ - [L]
+    RewriteRule ^(.*)$ public/$1 [R=302,L]
+</IfModule>
+
+# Never expose .env, composer/npm manifests or the artisan entrypoint.
+<FilesMatch "^(\.env.*|composer\.(json|lock)|package(-lock)?\.json|artisan)$">
+    Require all denied
+</FilesMatch>
+
+Options -Indexes
